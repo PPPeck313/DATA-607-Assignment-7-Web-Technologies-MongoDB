@@ -1,0 +1,32 @@
+<library>
+  <book>
+    <author>Ernest Hemingway</author>
+    <country>United States</country>
+    <imageLink>images/the-old-man-and-the-sea.jpg</imageLink>
+    <language>English</language>
+    <link>https://en.wikipedia.org/wiki/The_Old_Man_and_the_Sea </link>
+    <pages>128</pages>
+    <title>The Old Man and the Sea</title>
+    <year>1952</year>
+  </book>
+  <book>
+    <author>Homer</author>
+    <country>Greece</country>
+    <imageLink>images/the-odyssey-of-homer.jpg</imageLink>
+    <language>Greek</language>
+    <link>https://en.wikipedia.org/wiki/Odyssey </link>
+    <pages>374</pages>
+    <title>Odyssey</title>
+    <year>-800</year>
+  </book>
+  <book>
+    <author>James Joyce</author>
+    <country>Irish Free State</country>
+    <imageLink>images/ulysses.jpg</imageLink>
+    <language>English</language>
+    <link>https://en.wikipedia.org/wiki/Ulysses_(novel) </link>
+    <pages>228</pages>
+    <title>Ulysses</title>
+    <year>1922</year>
+  </book>
+</library>

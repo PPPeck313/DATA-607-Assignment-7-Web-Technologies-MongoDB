@@ -1,0 +1,203 @@
+---
+title: "Web Technologies; MongoDB"
+author: "Preston Peck"
+date: "10/10/2021"
+output: html_document
+---
+
+```{r include=FALSE}
+library(dplyr)
+library(jsonlite)
+library(rvest)
+library(readr)
+library(stringr)
+library(xml2)
+library(XML)
+library(tidyr)
+```
+
+# Load JSON
+```{r}
+# Variables
+jsonFile <- "data/books.json"
+
+# Convert to Data Frame
+jsonTable <- fromJSON(jsonFile) %>%
+  as_tibble()
+
+# Tidy
+jsonTable$link <- jsonTable$link %>%
+  str_trim()
+
+jsonTable
+```
+
+# Load XML
+### XML Library
+```{r}
+# Variables
+nodeName <- "//book"
+xmlFile <- "data/books.xml"
+
+# Parse Data
+xmlData <- xmlFile %>%
+  xmlParse()
+
+nodeData <- xmlData %>%
+  getNodeSet(nodeName)
+
+# Convert to Data Frame
+xmlTable <- xmlData %>%
+  xmlToDataFrame(nodes = nodeData) %>%
+  as_tibble()
+
+# Tidy
+xmlTable$link <- xmlTable$link %>%
+  str_trim()
+
+xmlTable$pages <- xmlTable$pages %>%
+  as.integer()
+
+xmlTable$year <- xmlTable$year %>%
+  as.integer()
+
+xmlTable
+```
+### xml2 Library
+```{r}
+# Parse Data
+xml2Data <- xmlFile %>%
+  read_xml()
+```
+##### All Nodes
+```{r}
+# Parse Data
+nodeData <- xml2Data %>%
+  xml_find_all(nodeName)
+nodeData
+
+nodeLengths <- nodeData %>%
+  xml_length()
+
+nodeNumbers <- 1:length(nodeData)
+
+nodeNames <- nodeData %>%
+  xml_children() %>%
+  xml_name()
+
+nodeValues <- nodeData %>%
+  xml_children() %>%
+  xml_text()
+
+# Convert to Data Frame
+xml2AllTable <- tibble(
+  num = rep(nodeNumbers, times = nodeLengths),
+  name = nodeNames, 
+  value = nodeValues
+)
+
+xml2AllTable
+
+# Tidy
+xml2AllTable <- (xml2AllTable %>%
+  spread(name, value))[,-c(1)]
+  
+xml2AllTable$link <- xml2AllTable$link %>%
+  str_trim()
+
+xml2AllTable$pages <- xml2AllTable$pages %>%
+  as.integer()
+
+xml2AllTable$year <- xml2AllTable$year %>%
+  as.integer()
+
+xml2AllTable
+```
+##### Select Nodes
+```{r}
+# Variables
+authorName <- "author"
+countryName <- "country"
+imageLinkName <- "imageLink"
+languageName <- "language"
+linkName <- "link"
+pagesName <- "pages"
+titleName <- "title"
+yearName <- "year"
+
+# Parse Data
+authorNodes <- nodeData %>%
+  xml_find_all(xpath = authorName) %>%
+  xml_text()
+
+countryNodes <- nodeData %>%
+  xml_find_all(xpath = countryName) %>%
+  xml_text()
+
+imageLinkNodes <- nodeData %>%
+  xml_find_all(xpath = imageLinkName) %>%
+  xml_text()
+
+languageNodes <- nodeData %>%
+  xml_find_all(xpath = languageName) %>%
+  xml_text()
+
+linkNodes <- nodeData %>%
+  xml_find_all(xpath = linkName) %>%
+  xml_text()
+
+pagesNodes <- nodeData %>%
+  xml_find_all(xpath = pagesName) %>%
+  xml_integer()
+
+titleNodes <- nodeData %>%
+  xml_find_all(xpath = titleName) %>%
+  xml_text()
+
+yearNodes <- nodeData %>%
+  xml_find_all(xpath = yearName) %>%
+  xml_integer()
+
+# Convert to Data Frame
+xml2SelectTable <- tibble(
+  author = authorNodes,
+  country = countryNodes,
+  imageLink = imageLinkNodes,
+  language = languageNodes,
+  link = linkNodes,
+  pages = pagesNodes,
+  title = titleNodes,
+  year = yearNodes
+)
+
+# Tidy
+xml2SelectTable$link <- xml2SelectTable$link %>%
+  str_trim()
+
+xml2SelectTable
+```
+
+# Load HTML Table
+```{r}
+# Variables
+htmlFile <- "data/books.html"
+tableName <- "table"
+
+# Convert to Data Frame
+htmlTable <- read_html(htmlFile) %>%
+  html_element(tableName) %>%
+  html_table()
+
+htmlTable
+```
+
+# Compare Results
+```{r}
+identical(jsonTable, xmlTable)
+identical(xmlTable, xml2AllTable)
+identical(xml2AllTable, xml2SelectTable)
+identical(xml2SelectTable, htmlTable)
+```
+
+# Analysis
+All three formats can eventually be formatted into the same data frame, but without going outside of each respective formats' library, the link column ended up with a new line character at in the end in JSON, and a whitespace character at the end in XML. The XML library also had difficulty determining data type and treated everything as text. As a result, HTML appears to be the easiest to work with, followed by JSON, and then XML.
